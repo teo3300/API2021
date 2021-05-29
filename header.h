@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #define uint unsigned int
-#define COMMAND_BUFF_LEN 15
+#define COMMAND_BUFF_LEN 14
 
 #define log
 #define print

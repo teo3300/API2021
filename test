@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+stamp=$(date +%Y%m%d-%H%M%S)
+
+if [ ! -f "Output" ]; then
+	make
+fi
+
+valgrind --tool=massif ./Open < $1
+
+out=$(ls massif.out.*)
+mv $out results/$out
+
+ms_print results/$out
