@@ -1,4 +1,7 @@
+/********** joint with cat **********/
+
 #include <stdio.h>
+#include <stdlib.h>
 
 #define uint unsigned int
 #define COMMAND_BUFF_LEN 15

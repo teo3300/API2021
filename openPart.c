@@ -16,12 +16,16 @@ int main(){
             for(int i=0; i<nodes_cnt; i++){
                 for(int j=0; j<nodes_cnt; j++){
                     scanf("%u,", &graph_matrix[ind(i,j)]);           // TODO: possibile operare su matrice incompleta?
+                    printf("%5u ", graph_matrix[ind(i,j)]);
                 }
+            printf("\n");
             }
+            printf("\n");
         }else if((*command_buffer) == 'T'){
             
         }
     }
+    malloc(4000*8);
     return 0;
 }
 
