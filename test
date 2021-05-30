@@ -1,15 +1,14 @@
 #!/bin/bash
 set -e
 
-stamp=$(date +%Y%m%d-%H%M%S)
+stamp=$(date +%Y%m%d_%H%M%S)
 
 if [ ! -f "Output" ]; then
-	make
+	make testOpen
 fi
 
-valgrind --tool=massif ./Open < $1
+out="results/massif.out.$(basename $1)-$stamp"
 
-out=$(ls massif.out.*)
-mv $out results/$out
+valgrind --tool=massif --massif-out-file=$out ./testOpen < $1
 
-ms_print results/$out
+ms_print $out

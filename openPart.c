@@ -1,37 +1,31 @@
 uint nodes_cnt;                                                         // perdoname madre por mi variable non locale (da usare in ind(y,x))
+uint* graph_matrix;
 
 void parse();
 
 int main(){
-    uint topK,
-         cnt = 0;
+    uint topK;
     char command_buffer[COMMAND_BUFF_LEN];                              // temporaneo tampone per distinguere i comandi
     scanf("%u %u\n",&nodes_cnt, &topK);
-    //PRINT(nodes_cnt);
-    //PRINT(topK);
+    PRINT(nodes_cnt);
+    PRINT(topK);
 
-    uint graph_matrix[nodes_cnt*nodes_cnt];                             // salva la matrice di incidenza come un VLA
-
+    graph_matrix = (uint*)malloc(nodes_cnt*nodes_cnt*sizeof(uint));     // alloca matrice di incidenza
     while(scanf("%s\n", command_buffer)>0){
         if((*command_buffer) == 'A'){
-            cnt++;
             for(int i=0; i<nodes_cnt; i++){
                 for(int j=0; j<nodes_cnt; j++){
-                    parse(adr(graph_matrix,i,j));
-                    //parse(&graph_matrix[ind(i,j)]);                     // TODO: si può migliorare ancora?
-                    //printf("%5u ", graph_matrix[ind(i,j)]);
+                    parse(adr(graph_matrix,i,j));                       // TODO: si può migliorare la lettura?
                 }
-            //printf("\n");
             }
-            //printf("\n");
         }else if((*command_buffer) == 'T'){
-            
         }
     }
+    free(graph_matrix);
     return 0;
 }
 
-void parse(uint* ret){                                                  // scanf merda
+void parse(uint* ret){                                                  // scanf merda (davvero parsare tutto direttamente da stdin è più veloce?)
     *ret=0;
     int c = getchar();
     while(c != '\n' && c != ','){
