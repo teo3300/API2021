@@ -1,6 +1,6 @@
 typedef struct HeapStruct{
     int node;
-    uint weight;
+    uint weight;                                                // TODO: rinominare weight -> key per l'utilizzo con heap diversi?
 }heapStruct;
 typedef struct{
     heapStruct* data;

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define uint unsigned int
 #define COMMAND_BUFF_LEN 14
@@ -31,7 +32,7 @@
 
 typedef struct HeapStruct{
     int node;
-    uint weight;
+    uint weight;                                                // TODO: rinominare weight -> key per l'utilizzo con heap diversi?
 }heapStruct;
 typedef struct{
     heapStruct* data;
@@ -99,6 +100,9 @@ void heapInsert(Heap heap, heapStruct el){
 
 /********** heapHandler.c **********/
 
+char AggiungiGrafo[] = "AggiungiGrafo";
+char TopK[]          = "TopK";
+
 int nodes_cnt;                                                         // perdoname madre por mi variable non locale (da usare in ind(y,x))
 uint* graph_matrix;
 Heap node_heap;
@@ -106,22 +110,24 @@ Heap node_heap;
 void parse();
 
 int main(){
-    int topK;
+    int K;
     char command_buffer[COMMAND_BUFF_LEN];                              // temporaneo tampone per distinguere i comandi
-    scanf("%u %u\n",&nodes_cnt, &topK);
+    scanf("%u %u\n",&nodes_cnt, &K);
+    PRINT(nodes_cnt);
+    PRINT(K);
 
     graph_matrix     = (uint*)malloc(nodes_cnt*nodes_cnt*sizeof(uint));     // alloca matrice di incidenza
     node_heap.data   = (heapStruct*) malloc(nodes_cnt*sizeof(heapStruct));  // alloca heap di nodi
     node_heap.length = nodes_cnt;
 
     while(scanf("%s\n", command_buffer)>0){
-        if((*command_buffer) == 'A'){
+        if(!strncmp(command_buffer, AggiungiGrafo, COMMAND_BUFF_LEN)){
             for(int i=0; i<nodes_cnt; i++){
                 for(int j=0; j<nodes_cnt; j++){
                     parse(adr(graph_matrix,i,j));                       // TODO: si può migliorare la lettura?
                 }
             }
-        }else if((*command_buffer) == 'T'){
+        }else if(!strncmp(command_buffer, TopK, COMMAND_BUFF_LEN)){
         }
     }
     free(graph_matrix);

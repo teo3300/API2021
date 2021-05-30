@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define uint unsigned int
 #define COMMAND_BUFF_LEN 14
