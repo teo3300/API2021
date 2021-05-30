@@ -1,16 +1,18 @@
-uint nodes_cnt;                                                         // perdoname madre por mi variable non locale (da usare in ind(y,x))
+int nodes_cnt;                                                         // perdoname madre por mi variable non locale (da usare in ind(y,x))
 uint* graph_matrix;
+Heap node_heap;
 
 void parse();
 
 int main(){
-    uint topK;
+    int topK;
     char command_buffer[COMMAND_BUFF_LEN];                              // temporaneo tampone per distinguere i comandi
     scanf("%u %u\n",&nodes_cnt, &topK);
-    PRINT(nodes_cnt);
-    PRINT(topK);
 
-    graph_matrix = (uint*)malloc(nodes_cnt*nodes_cnt*sizeof(uint));     // alloca matrice di incidenza
+    graph_matrix     = (uint*)malloc(nodes_cnt*nodes_cnt*sizeof(uint));     // alloca matrice di incidenza
+    node_heap.data   = (heapStruct*) malloc(nodes_cnt*sizeof(heapStruct));  // alloca heap di nodi
+    node_heap.length = nodes_cnt;
+
     while(scanf("%s\n", command_buffer)>0){
         if((*command_buffer) == 'A'){
             for(int i=0; i<nodes_cnt; i++){

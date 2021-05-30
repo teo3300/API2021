@@ -5,7 +5,7 @@
 #endif
 
 #ifdef print
-    #define PRINT(msg)  printf("%4u: %4u\n", __LINE__, msg)
+    #define PRINT(msg)  printf("%4u: %4i\n", __LINE__, msg)
 #else
     #define LOG(msg) 
 #endif
