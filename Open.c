@@ -1,147 +1,181 @@
-/********** joint with cat **********/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#define uint                    unsigned int        // abbreviazione unsigned int
+#define LUNGHEZZA_MAX_COMANDI   14                  // lunghezza massima della stringa di comando
+#define AggiungiGrafo           "AggiungiGrafo"
+#define TopK                    "TopK"
 
-#define uint unsigned int
-#define COMMAND_BUFF_LEN 14
+typedef union{
+    struct{
+        uint labl;
+        uint dist;
+    };
+    struct{
+        uint length;
+        uint size;
+    };
+}Nodo;
+typedef Nodo* Heap;
 
-#define log
-#define print
-
-#define ind(y, x) ((y) * nodes_cnt + (x))                                 // usato per trattare vettore dei vertici come una matrice
-#define adr(matrix, y, x)   ( (matrix) + (y) * nodes_cnt + (x))
-
-/********** header.h **********/
-
-#ifdef log
-    #define LOG(msg)    printf("%4u: %s\n", __LINE__, msg)
-#else
-    #define LOG(msg) 
-#endif
-
-#ifdef print
-    #define PRINT(msg)  printf("%4u: %4i\n", __LINE__, msg)
-#else
-    #define LOG(msg) 
-#endif
-
-/********** support.h **********/
-
-typedef struct HeapStruct{
-    int node;
-    uint weight;                                                // TODO: rinominare weight -> key per l'utilizzo con heap diversi?
-}heapStruct;
-typedef struct{
-    heapStruct* data;
-    int length;
-    int size;
-}Heap;
-
-// daily reminder: le macro sono golose di parentesi o di errori
-#define chLeft(n)           (2*(n)+1)           //
-#define chRight(n)          (2*(n)+2)           // macro per genitori e figli rimappati per vettore 0 based
-#define parent(n)           (((n)-1)>>1)        //
-#define heapMin(heap)       (*((heap).data))
-#define isSmaller(heap,a,b) ((heap).data[(a)].weight < (heap).data[(b)].weight)
-
-void heapSwap       (Heap heap, int a, int b);
-void createMinHeap  (Heap heap);
-void minHeapify     (Heap heap, int n);
-void heapInsert     (Heap heap, heapStruct  el);
-void* deleteMin     (Heap heap, heapStruct* el);
-
-void heapSwap(Heap heap, int a, int b){
-    heapStruct C =              { .node = heap.data[a].node, .weight = heap.data[a].weight};
-    heap.data[a] = (heapStruct) { .node = heap.data[b].node, .weight = heap.data[b].weight};
-    heap.data[b] = (heapStruct) { .node =            C.node, .weight =            C.weight};
-}          
-
-void createMinHeap(Heap heap){
-    heap.size = heap.length;                        // poni logicamente lo heap sul vettore (il vettore DEVE essere inizializzato)
-    for(int i = (parent(heap.length-1)); i > -1; i--)
-        minHeapify(heap, i);
-}
-
-void minHeapify(Heap heap, int n){
-    int pos_min;
-    int l = chLeft(n);
-    int r = chRight(n);
-    if (l <= heap.size && isSmaller(heap, l, n))
-        pos_min = l;
-    else pos_min = n;
-    if (r <= heap.size && isSmaller(heap, r, pos_min))
-        pos_min = r;
-    if (pos_min != n){
-        heapSwap(heap, pos_min, n);
-        minHeapify(heap, pos_min);
-    }
-}
-
-void* deleteMin(Heap heap, heapStruct* el){
-    if(heap.size < 1) return NULL;
-    *el = (heapStruct){ .node = heapMin(heap).node, heapMin(heap).node};
-    heapMin(heap) = (heapStruct){ .node = heap.data[heap.size-1].node, .weight = heap.data[heap.size-1].weight};
-    heap.size--;
-    minHeapify(heap,0);
-    return el;
-};
-
-void heapInsert(Heap heap, heapStruct el){
-    int i = ++heap.size;    // heap.size ++; int i = heap.size;
-    heap.data[heap.size] = (heapStruct){ .node = el.node, .weight = el.weight};
-    while (i > 0 && isSmaller(heap, parent(i), i)){
-        heapSwap(heap, parent(i), i);
-        i = parent(i);
-    }
-}
-
-/********** heapHandler.c **********/
-
-char AggiungiGrafo[] = "AggiungiGrafo";
-char TopK[]          = "TopK";
-
-int nodes_cnt;                                                         // perdoname madre por mi variable non locale (da usare in ind(y,x))
-uint* graph_matrix;
-Heap node_heap;
-
-void parse();
+uint**  allocaMatrice(uint dim);
+uint**  liberaMatrice(uint** matrice, uint dim);
+void    riempiMatrice(uint** matrice, uint dim);
+void    stampaMatrice(uint** matrice, uint dim);
+uint    calcolaMinSpanTree(uint** matrice, Heap heap, uint dim);
+Heap    allocaMinHeap(uint dim);
+Heap    liberaMinHeap(Heap heap);
+void    costruisciMinHeap(Heap heap);
+void    minHeapify(Heap heap, uint n);
+void    controllaMin(Heap heap, Nodo* ret);
+uint    cancellaMin(Heap heap, Nodo* ret);
+void    inserisciHeap(Heap heap, uint labl, uint dist);
 
 int main(){
-    int K;
-    char command_buffer[COMMAND_BUFF_LEN];                              // temporaneo tampone per distinguere i comandi
-    scanf("%u %u\n",&nodes_cnt, &K);
-    PRINT(nodes_cnt);
-    PRINT(K);
+    uint    numero_nodi;
+    uint    lunghezza_classifica;
+    char    comando[LUNGHEZZA_MAX_COMANDI];
+    uint**  matrice_adiacenza;
+    Heap    heap_supporto;
+    //*leggere i valori di dimensione dei grafi e della lunghezza della classifica
+    //*leggere comando
+    //*se "AggiungiGrafo":
+    //*     riempi la matrice di adiacenza coi valori inseriti
+    //      calcola l'albero dei cammini minimi
+    //      aggiorna la classifica
+    //*se "TopK":
+    //      stampa la classifica
+    //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
 
-    graph_matrix     = (uint*)malloc(nodes_cnt*nodes_cnt*sizeof(uint));     // alloca matrice di incidenza
-    node_heap.data   = (heapStruct*) malloc(nodes_cnt*sizeof(heapStruct));  // alloca heap di nodi
-    node_heap.length = nodes_cnt;
+    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
+    matrice_adiacenza = allocaMatrice(numero_nodi);
+    heap_supporto     = allocaMinHeap(numero_nodi-1);       // heap non deve contenere nodo 0
 
-    while(scanf("%s\n", command_buffer)>0){
-        if(!strncmp(command_buffer, AggiungiGrafo, COMMAND_BUFF_LEN)){
-            for(int i=0; i<nodes_cnt; i++){
-                for(int j=0; j<nodes_cnt; j++){
-                    parse(adr(graph_matrix,i,j));                       // TODO: si può migliorare la lettura?
-                }
-            }
-        }else if(!strncmp(command_buffer, TopK, COMMAND_BUFF_LEN)){
+
+    while(scanf("%s\n", comando) != EOF){
+        if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
+            riempiMatrice(matrice_adiacenza, numero_nodi);
+            calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
+        }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
+
         }
     }
-    free(graph_matrix);
-    return 0;
+    heap_supporto     = liberaMinHeap(heap_supporto);
+    matrice_adiacenza = liberaMatrice(matrice_adiacenza, numero_nodi);
 }
 
-void parse(uint* ret){                                                  // scanf merda (davvero parsare tutto direttamente da stdin è più veloce?)
-    *ret=0;
-    int c = getchar();
-    while(c != '\n' && c != ','){
-        *ret = (*ret)*10 + c -'0';
-        c = getchar();
+/************* matrice di adiacenza ********************/
+
+uint** allocaMatrice(uint dim){
+    uint** tmp;
+    tmp = (uint**) malloc(dim*sizeof(uint*));
+    for(int i=0; i<dim; i++){
+        tmp[i] = (uint*) malloc(dim*sizeof(uint));
+    }
+    return tmp;
+}
+
+uint** liberaMatrice(uint** matrice, uint dim){
+    for(int i=0; i<dim; i++){
+        free(matrice[i]);
+    }
+    free(matrice);
+    return NULL;
+}
+
+void riempiMatrice(uint** matrice, uint dim){
+    for(int i=0; i<dim; i++){
+        for(int j=0; j<dim; j++){
+            scanf("%u,", &matrice[i][j]);
+        }
     }
 }
 
-/********** OpenPart.c **********/
+void stampaMatrice(uint** matrice, uint dim){
+    for(int i=0; i<dim; i++){
+        for(int j=0; j<dim; j++){
+            printf("%5u ", matrice[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
 
+/************* calcolo minimum spanning tree ************/
+
+uint calcolaMinSpanTree(uint** matrice, Heap heap, uint dim){
+    
+}
+
+/********************* heap *****************************/
+
+Heap allocaMinHeap(uint dim){
+    Heap tmp = (Heap) malloc((dim+1)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
+    tmp[0].length = dim;
+    return tmp;
+}
+
+Heap liberaMinHeap(Heap heap){
+    free(heap);
+    return NULL;
+}
+
+void costruiciMinHeap(Heap heap){
+    heap[0].size = heap[0].length;
+    for(int i=(heap[0].length)>>1; i>0; i--){
+        minHeapify(heap,i);
+    }
+}
+
+#define LEFT(n)         (2*(n))
+#define RIGHT(n)        (2*(n)+1)
+#define PARENT(n)       ((n)>>1)
+#define SMALLER(a,b)    (heap[(a)].dist < heap[(b)].dist)                           // per tenere separato il criterio di ordinamento
+#define SWAP(a,b)       {Nodo C = heap[(a)]; heap[(a)] = heap[(b)]; heap[(b)] = C;}
+/*void swap(Heap heap, uint a, uint b){
+  /*Nodo C  =       {heap[a].labl, heap[a].dist};
+    heap[a] = (Nodo){heap[b].labl, heap[b].dist};
+    heap[b] = (Nodo){      C.labl,       C.dist};
+}*/
+
+void minHeapify(Heap heap, uint n){
+    uint l = LEFT(n);
+    uint r = RIGHT(n);
+    uint posmin;
+    if(l <= heap[0].size && SMALLER(l,n))
+        posmin = l;
+    else posmin = n;
+    if(r <= heap[0].size && SMALLER(r,posmin))
+        posmin = r;
+    if(posmin != n){
+        SWAP(n, posmin);
+        minHeapify(heap, posmin);
+    }
+}
+
+void controllaMin(Heap heap, Nodo* ret){
+    *ret = heap[1];
+    //*ret = (Nodo){heap[1].labl, heap[1].dist};
+}
+
+uint cancellaMin(Heap heap, Nodo* ret){
+    if(heap[0].size < 1)
+        return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
+    *ret = heap[1];
+    heap[1] = heap[heap[0].size];
+    //*ret = (Nodo){heap[1].labl, heap[1].dist};
+    //heap[1] = (Nodo){heap[heap[0].size].labl, heap[heap[0].size].dist};
+    heap[0].size--;
+    minHeapify(heap, 1);
+    return 1;                   // un elemento è stato cancellato
+}
+
+void inserisciHeap(Heap heap, uint labl, uint dist){
+    uint i = ++heap[0].size;
+    heap[i] = (Nodo){labl, dist};
+    while(i > 1 && SMALLER(PARENT(i), i)){
+        SWAP(PARENT(i),i);
+        i = PARENT(i);
+    }
+}
