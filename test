@@ -9,12 +9,12 @@ fi
 
 if [ $1 = "massif" ]; then
     out="results/massif.out.$(basename $2)-$stamp"
-    valgrind --tool=massif --time-unit=B --massif-out-file=$out ./testOpen < $2
+    valgrind --tool=massif --massif-out-file=$out ./testOpen < $2
     ms_print $out | less
     rm $out
 elif [ $1 = "callgrind" ]; then
     out="results/callgrind_out.$(basename $2)-$stamp"
     valgrind --tool=callgrind --callgrind-out-file=$out ./testOpen < $2
-    callgrind_annotate $out --inclusive=yes --tree=both | grep -v build | less
+    callgrind_annotate $out --inclusive=yes --tree=both | grep -v build | lsess
     rm $out
 fi

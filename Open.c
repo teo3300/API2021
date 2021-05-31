@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
-#define uint                    unsigned int        // abbreviazione unsigned int
+#define uint                    unsigned int                                        // abbreviazione unsigned int
 #define LUNGHEZZA_MAX_COMANDI   14                  // lunghezza massima della stringa di comando
 #define INFINITO                ((uint)-1)
 #define AggiungiGrafo           "AggiungiGrafo"
@@ -62,19 +62,21 @@ int main(){
     //      stampa la classifica
     //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
 
-    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
+    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica); 
+    printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
-    heap_supporto     = allocaMinHeap(numero_nodi-1);                           // heap non deve contenere il nodo 0
+    heap_supporto     = allocaMinHeap(numero_nodi);                                 // heap non deve contenere il nodo 0
 
 
     while(scanf("%s\n", comando) != EOF){
         if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
-            riempiMatrice(matrice_adiacenza, numero_nodi);                      // stampaMatrice(matrice_adiacenza, numero_nodi);
+            riempiMatrice(matrice_adiacenza, numero_nodi);                          // stampaMatrice(matrice_adiacenza, numero_nodi);
             printf("%2u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
+            //calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
             indice++;
         }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
 
-        }else return 1;                                                         // comando inatteso
+        }else return 1;                                                             // comando inatteso
     }
     heap_supporto     = liberaMinHeap(heap_supporto);
     matrice_adiacenza = liberaMatrice(matrice_adiacenza, numero_nodi);
@@ -154,7 +156,7 @@ uint DijkstraQueue(uint** matrice, Heap heap, uint dim){
 /********************* heap *****************************/
 
 Heap allocaMinHeap(uint dim){
-    Heap tmp = (Heap) malloc((dim+1)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
+    Heap tmp = (Heap) malloc((dim)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
     tmp[0].length = dim;
     return tmp;
 }
@@ -165,9 +167,9 @@ Heap liberaMinHeap(Heap heap){
 }
 
 void costruisciMinHeap(Heap heap){
-    heap[0].size = heap[0].length;
-    for(int i=(heap[0].size)>>1; i>0; i--){
-        minHeapify(heap,i);
+    HEAP.size = HEAP.length;
+    for(int i=(HEAP.size)>>1; i>0; i--){
+        minHeapify(heap, i);
     }
 }
 
