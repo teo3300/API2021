@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 #define uint                    unsigned int        // abbreviazione unsigned int
 #define LUNGHEZZA_MAX_COMANDI   14                  // lunghezza massima della stringa di comando
+#define INFINITO                ((uint)-1)
 #define AggiungiGrafo           "AggiungiGrafo"
 #define TopK                    "TopK"
 
@@ -31,6 +33,7 @@ void    minHeapify(Heap heap, uint n);
 void    controllaMin(Heap heap, Nodo* ret);
 uint    cancellaMin(Heap heap, Nodo* ret);
 void    inserisciHeap(Heap heap, uint labl, uint dist);
+void    stampaMinHeap(Heap heap);
 
 int main(){
     uint    numero_nodi;
@@ -48,14 +51,14 @@ int main(){
     //      stampa la classifica
     //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
 
-    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
+    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  //printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
-    heap_supporto     = allocaMinHeap(numero_nodi-1);       // heap non deve contenere nodo 0
+    heap_supporto     = allocaMinHeap(numero_nodi-1);       // heap non deve contenere il nodo 0
 
 
     while(scanf("%s\n", comando) != EOF){
         if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
-            riempiMatrice(matrice_adiacenza, numero_nodi);
+            riempiMatrice(matrice_adiacenza, numero_nodi); //stampaMatrice(matrice_adiacenza, numero_nodi);
             calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
         }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
 
@@ -105,7 +108,14 @@ void stampaMatrice(uint** matrice, uint dim){
 /************* calcolo minimum spanning tree ************/
 
 uint calcolaMinSpanTree(uint** matrice, Heap heap, uint dim){
-    
+    for(uint i=1; i<dim; i++){
+        if(matrice[0][i])
+            heap[i] = (Nodo){i, matrice[0][i]};
+        else
+            heap[i] = (Nodo){i, -1};
+    }
+    costruisciMinHeap(heap);
+    //stampaMinHeap(heap);
 }
 
 /********************* heap *****************************/
@@ -121,9 +131,9 @@ Heap liberaMinHeap(Heap heap){
     return NULL;
 }
 
-void costruiciMinHeap(Heap heap){
+void costruisciMinHeap(Heap heap){
     heap[0].size = heap[0].length;
-    for(int i=(heap[0].length)>>1; i>0; i--){
+    for(int i=(heap[0].size)>>1; i>0; i--){
         minHeapify(heap,i);
     }
 }
@@ -178,4 +188,12 @@ void inserisciHeap(Heap heap, uint labl, uint dist){
         SWAP(PARENT(i),i);
         i = PARENT(i);
     }
+}
+
+void stampaMinHeap(Heap heap){
+    printf("Size:   %u\nLength: %u\n", heap[0].size, heap[0].length);
+    for(int i=1; i<=heap[0].size; i++){
+        printf("<%u, %u>\n", heap[i].labl, heap[i].dist);
+    }
+    printf("\n");
 }
