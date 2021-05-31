@@ -51,18 +51,18 @@ int main(){
     //      stampa la classifica
     //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
 
-    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  //printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
+    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica);  printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
-    heap_supporto     = allocaMinHeap(numero_nodi-1);       // heap non deve contenere il nodo 0
+    heap_supporto     = allocaMinHeap(numero_nodi-1);                           // heap non deve contenere il nodo 0
 
 
     while(scanf("%s\n", comando) != EOF){
         if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
-            riempiMatrice(matrice_adiacenza, numero_nodi); //stampaMatrice(matrice_adiacenza, numero_nodi);
+            riempiMatrice(matrice_adiacenza, numero_nodi);                      // stampaMatrice(matrice_adiacenza, numero_nodi);
             calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
         }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
 
-        }
+        }else return 1;                                                         // comando inatteso
     }
     heap_supporto     = liberaMinHeap(heap_supporto);
     matrice_adiacenza = liberaMatrice(matrice_adiacenza, numero_nodi);
@@ -110,12 +110,12 @@ void stampaMatrice(uint** matrice, uint dim){
 uint calcolaMinSpanTree(uint** matrice, Heap heap, uint dim){
     for(uint i=1; i<dim; i++){
         if(matrice[0][i])
-            heap[i] = (Nodo){i, matrice[0][i]};
+            heap[i] = (Nodo){.labl = i, .dist = matrice[0][i]};
         else
-            heap[i] = (Nodo){i, -1};
+            heap[i] = (Nodo){.labl = i, .dist = -1};
     }
     costruisciMinHeap(heap);
-    //stampaMinHeap(heap);
+    return -1;
 }
 
 /********************* heap *****************************/
@@ -138,13 +138,14 @@ void costruisciMinHeap(Heap heap){
     }
 }
 
+#define META            heap[0]                                                     // usa heap[0] per salvare lunghezza e dimensione
 #define LEFT(n)         (2*(n))
 #define RIGHT(n)        (2*(n)+1)
 #define PARENT(n)       ((n)>>1)
 #define SMALLER(a,b)    (heap[(a)].dist < heap[(b)].dist)                           // per tenere separato il criterio di ordinamento
 #define SWAP(a,b)       {Nodo C = heap[(a)]; heap[(a)] = heap[(b)]; heap[(b)] = C;}
 /*void swap(Heap heap, uint a, uint b){
-  /*Nodo C  =       {heap[a].labl, heap[a].dist};
+    clNodo C  =       {heap[a].labl, heap[a].dist};
     heap[a] = (Nodo){heap[b].labl, heap[b].dist};
     heap[b] = (Nodo){      C.labl,       C.dist};
 }*/
@@ -153,10 +154,10 @@ void minHeapify(Heap heap, uint n){
     uint l = LEFT(n);
     uint r = RIGHT(n);
     uint posmin;
-    if(l <= heap[0].size && SMALLER(l,n))
+    if(l <= META.size && SMALLER(l,n))
         posmin = l;
     else posmin = n;
-    if(r <= heap[0].size && SMALLER(r,posmin))
+    if(r <= META.size && SMALLER(r,posmin))
         posmin = r;
     if(posmin != n){
         SWAP(n, posmin);
@@ -170,20 +171,20 @@ void controllaMin(Heap heap, Nodo* ret){
 }
 
 uint cancellaMin(Heap heap, Nodo* ret){
-    if(heap[0].size < 1)
+    if(META.size < 1)
         return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
     *ret = heap[1];
-    heap[1] = heap[heap[0].size];
+    heap[1] = heap[META.size];
     //*ret = (Nodo){heap[1].labl, heap[1].dist};
-    //heap[1] = (Nodo){heap[heap[0].size].labl, heap[heap[0].size].dist};
-    heap[0].size--;
+    //heap[1] = (Nodo){heap[META.size].labl, heap[META.size].dist};
+    META.size--;
     minHeapify(heap, 1);
     return 1;                   // un elemento è stato cancellato
 }
 
 void inserisciHeap(Heap heap, uint labl, uint dist){
-    uint i = ++heap[0].size;
-    heap[i] = (Nodo){labl, dist};
+    uint i = ++META.size;
+    heap[i] = (Nodo){.labl = labl, .dist = dist};
     while(i > 1 && SMALLER(PARENT(i), i)){
         SWAP(PARENT(i),i);
         i = PARENT(i);
@@ -191,9 +192,9 @@ void inserisciHeap(Heap heap, uint labl, uint dist){
 }
 
 void stampaMinHeap(Heap heap){
-    printf("Size:   %u\nLength: %u\n", heap[0].size, heap[0].length);
-    for(int i=1; i<=heap[0].size; i++){
-        printf("<%u, %u>\n", heap[i].labl, heap[i].dist);
+    printf("Size:   %u\nLength: %u\n", META.size, META.length);
+    for(int i=1; i<=META.size; i++){
+        printf("<%u,%u> - ", heap[i].labl, heap[i].dist);
     }
     printf("\n");
 }

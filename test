@@ -7,8 +7,14 @@ if [ ! -f "Output" ]; then
 	make testOpen
 fi
 
-out="results/massif.out.$(basename $1)-$stamp"
-
-valgrind --tool=massif --massif-out-file=$out ./testOpen < $1
-
-ms_print $out
+if [ $1 = "massif" ]; then
+    out="results/massif.out.$(basename $2)-$stamp"
+    valgrind --tool=massif --massif-out-file=$out ./testOpen < $2
+    ms_print $out | less
+    rm $out
+elif [ $1 = "callgrind" ]; then
+    out="results/callgrind_out.$(basename $2)-$stamp"
+    valgrind --tool=callgrind --callgrind-out-file=$out ./testOpen < $2
+    callgrind_annotate $out --inclusive=yes --tree=both | grep -v build | less
+    rm $out
+fi
