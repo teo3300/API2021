@@ -147,8 +147,9 @@ uint DijkstraQueue(uint** matrice, Heap heap, uint dim){
         }
         heap[HEAP.size+1] = tmp;
     }
-    for(uint i=1; i<=HEAP.length; i++){
-        ret += heap[i].dist;
+    for(uint i=HEAP.size+1; i<=HEAP.length; i++){
+        if(heap[i].dist != INFINITO)
+            ret += heap[i].dist;
     }
     return ret;
 }
@@ -156,7 +157,7 @@ uint DijkstraQueue(uint** matrice, Heap heap, uint dim){
 /********************* heap *****************************/
 
 Heap allocaMinHeap(uint dim){
-    Heap tmp = (Heap) malloc((dim)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
+    Heap tmp = (Heap) malloc((dim+1)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
     tmp[0].length = dim;
     return tmp;
 }
