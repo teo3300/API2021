@@ -45,6 +45,8 @@ void    stampaMinHeap(Heap heap);
 void    stampaResiduo(Heap heap);
 uint    DijkstraQueue(uint** matrice, Heap heap, uint dim);
 
+int dump;
+
 int main(){
     uint    indice = 0;
     uint    numero_nodi;
@@ -62,8 +64,8 @@ int main(){
     //      stampa la classifica
     //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
 
-    scanf("%u %u\n", &numero_nodi, &lunghezza_classifica); 
-    printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
+    if(scanf("%u %u\n", &numero_nodi, &lunghezza_classifica) == EOF) return 1; 
+    //printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
     heap_supporto     = allocaMinHeap(numero_nodi);                                 // heap non deve contenere il nodo 0
 
@@ -104,14 +106,13 @@ uint** liberaMatrice(uint** matrice, uint dim){
 void riempiMatrice(uint** matrice, uint dim){
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
-            scanf("%10u,", &matrice[i][j]);
+            if(scanf("%10u,", &matrice[i][j]));
             if(!matrice[i][j]) matrice[i][j] = INFINITO;
         }
     }
 }
 
 void stampaMatrice(uint** matrice, uint dim){
-    printf("\n");
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
             if(matrice[i][j] == INFINITO){
@@ -148,7 +149,7 @@ uint DijkstraQueue(uint** matrice, Heap heap, uint dim){
         heap[HEAP.size+1] = tmp;
     }
     for(uint i=HEAP.size+1; i<=HEAP.length; i++){
-        if(heap[i].dist != INFINITO)
+        if(heap[i].dist != INFINITO)                // NON TOGLIERE QUESTO CONFRONTO (necessario per impossibilità di riconoscere causa di uscita dal while)
             ret += heap[i].dist;
     }
     return ret;
@@ -157,8 +158,8 @@ uint DijkstraQueue(uint** matrice, Heap heap, uint dim){
 /********************* heap *****************************/
 
 Heap allocaMinHeap(uint dim){
-    Heap tmp = (Heap) malloc((dim+1)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
-    tmp[0].length = dim;
+    Heap tmp = (Heap) malloc((dim)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
+    tmp[0].length = dim-1;
     return tmp;
 }
 
@@ -195,8 +196,9 @@ void controllaMin(Heap heap, Nodo* ret){
 }
 
 uint cancellaMin(Heap heap, Nodo* ret){
-    if(HEAP.size < 1)
+    if(HEAP.size < 1){
         return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
+    }
     *ret = heap[1];
     heap[1] = heap[HEAP.size];
     HEAP.size--;
@@ -205,7 +207,7 @@ uint cancellaMin(Heap heap, Nodo* ret){
 }
 
 void decrementaPri(Heap heap, uint i){
-    while(i > 1 && SMALLER(PARENT(i), i)){
+    while(i > 1 && SMALLER(i, PARENT(i))){
         SWAP(PARENT(i),i);
         i = PARENT(i);
     }

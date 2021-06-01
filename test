@@ -4,17 +4,17 @@ set -e
 stamp=$(date +%Y%m%d_%H%M%S)
 
 if [ ! -f "Output" ]; then
-	make testOpen
+	make bin/test
 fi
 
 if [ $1 = "massif" ]; then
     out="results/massif.out.$(basename $2)-$stamp"
-    valgrind --tool=massif --massif-out-file=$out ./testOpen < $2
+    valgrind --tool=massif --time-unit=ms --massif-out-file=$out ./bin/test < $2
     ms_print $out | less
     rm $out
 elif [ $1 = "callgrind" ]; then
     out="results/callgrind_out.$(basename $2)-$stamp"
-    valgrind --tool=callgrind --callgrind-out-file=$out ./testOpen < $2
+    valgrind --tool=callgrind --callgrind-out-file=$out ./bin/test < $2
     callgrind_annotate $out --inclusive=yes --tree=both | grep -v build | lsess
     rm $out
 fi
