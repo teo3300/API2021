@@ -9,7 +9,7 @@ fi
 
 if [ $1 = "massif" ]; then
     out="results/massif.out.$(basename $2)-$stamp"
-    valgrind --tool=massif --time-unit=ms --massif-out-file=$out ./bin/test < $2
+    valgrind --tool=massif --time-unit=i --massif-out-file=$out ./bin/test < $2
     ms_print $out | less
     rm $out
 elif [ $1 = "callgrind" ]; then
