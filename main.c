@@ -9,12 +9,13 @@
 #define AggiungiGrafo           "AggiungiGrafo"
 #define TopK                    "TopK"
 
-#define HEAP            (*heap)                                                     // usa heap[0] per salvare lunghezza e dimensione
-#define LEFT(n)         (2*(n))
-#define RIGHT(n)        (2*(n)+1)
-#define PARENT(n)       ((n)>>1)
-#define SMALLER(a,b)    (heap[(a)].dist < heap[(b)].dist)                           // per tenere separato il criterio di ordinamento
-#define SWAP(a,b)       {Nodo C = heap[(a)]; heap[(a)] = heap[(b)]; heap[(b)] = C;}
+#define HEAP                (*heap)                                                     // usa heap[0] per salvare lunghezza e dimensione
+#define LEFT(n)             (2*(n))
+#define RIGHT(n)            (2*(n)+1)
+#define PARENT(n)           ((n)>>1)
+#define SMALLER(a,b)        (heap[(a)].dist < heap[(b)].dist)
+#define GREATER(a,b)        (heap[(a)].dist > heap[(b)].dist)
+#define SWAP(a,b)           {Nodo C = heap[(a)]; heap[(a)] = heap[(b)]; heap[(b)] = C;}
 
 //  Utilizza la stessa definizione sia per i dati che per i metadati
 typedef union{
@@ -29,97 +30,56 @@ typedef union{
 }Nodo;
 typedef Nodo* Heap;
 
-typedef union NodoLista{
-    struct{
-        uint peso;
-        union NodoLista* next;
-    };
-    struct{
-        uint length;
-        union NodoLista* first;
-    };
-}nodoLista;
-typedef nodoLista* Pila;
-
 uint**  allocaMatrice(uint dim);
 uint**  liberaMatrice(uint** matrice, uint dim);
 void    riempiMatrice(uint** matrice, uint dim);
 void    stampaMatrice(uint** matrice, uint dim);
 uint    calcolaMinSpanTree(uint** matrice, Heap heap, uint dim);
 Heap    allocaHeap(uint dim);
-Heap    liberaMinHeap(Heap heap);
+Heap    liberaHeap(Heap heap);
 void    costruisciMinHeap(Heap heap);
+void    cleanHeap(Heap heap);
 void    minHeapify(Heap heap, uint n);
-void    controllaMin(Heap heap, Nodo* ret);
 uint    cancellaMin(Heap heap, Nodo* ret);
 void    decrementaPri(Heap heap, uint i);
-void    inserisciHeap(Heap heap, uint labl, uint dist);
-void    stampaMinHeap(Heap heap);
+void    incrementaPri(Heap heap, uint i);
+void    stampaHeap(Heap heap);
 void    stampaResiduo(Heap heap);
 uint    DijkstraQueue(uint** matrice, Heap heap, uint dim);
 uint    DijkstraQuad(uint** matrice, Heap heap, uint dim);
-Pila    creaPila();
-void    pushPila(Pila pila, uint val);
-uint    popPila(Pila pila);
-uint    dimensionePila(Pila);
+void    costruisciMaxHeap(Heap heap);
+void    maxHeapify(Heap heap, uint n);
+Nodo*   heapMax(Heap heap);
+uint    cancellaMax(Heap heap, Nodo* ret);
+void    inserisciMaxHeap(Heap heap, uint labl, uint dist);
+uint    inserisciFuoriOrdine(Heap heap, uint labl, uint dist);
 
 int main(){
-    uint    indice = 0, heap_top = 0;
-    uint    peso_grafo;
+    uint    indice = 0;
     uint    numero_nodi;
     uint    K;
     char    comando[LUNGHEZZA_MAX_COMANDI];
     uint**  matrice_adiacenza;
     Heap    heap_supporto;
-    Heap    heap_classifica;
-    Pila    top_pila;
-    //*leggere i valori di dimensione dei grafi e della lunghezza della classifica
-    //*leggere comando
-    //*se "AggiungiGrafo":
-    //*     riempi la matrice di adiacenza coi valori inseriti
-    //*     calcola l'albero dei cammini minimi
-    //      se #grafi < dimensione top:
-    //          push grafo
-    //      se #grafi > dimensione top:
-    //          copia pila su max heap
-    //          ordina heap
-    //          se peso nuovo grafo < peso max:
-    //              rimuovi max, e aggiungi nuovo (con rispettive max heapyfy e bubble up)
-    //*se "TopK":
-    //      se #grafi < dimensione top:
-    //          stampa lista
-    //      se #grafi > dimensione top
-    //          stampa heap
-    //*se sconosciuto o finiti gli input esci altrimenti leggi nuovo comando
+    //Heap    heap_classifica;
 
     if(scanf("%u %u\n", &numero_nodi, &K) == EOF) return 1; 
     //printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
     heap_supporto     = allocaHeap(numero_nodi-1);                                    // heap non deve contenere il nodo 0
-    top_pila          = creaPila();
+    //heap_classifica   = allocaHeap(K);                                              //guess I'll die
 
     while(scanf("%s\n", comando) != EOF){
         if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
-            riempiMatrice(matrice_adiacenza, numero_nodi);                          // stampaMatrice(matrice_adiacenza, numero_nodi);
-            //printf("%4u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
-            peso_grafo = calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
-            if(indice < K){
-                pushPila(top_pila, peso_grafo);
-            }else if(indice == K){
-                heap_classifica = allocaHeap(K);
-                heap_top = 1;
-            }
+            riempiMatrice(matrice_adiacenza, numero_nodi);
+            printf("%4u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
+            //calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
             indice++;
         }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
-            while(dimensionePila(top_pila)){
-                printf("Pop da pila (%u): %u\n", --indice, popPila(top_pila));
-            }
+
         }else return 1;                                                             // comando inatteso
     }
-    if(heap_top){
-        free(heap_classifica);
-    }
-    heap_supporto     = liberaMinHeap(heap_supporto);
+    heap_supporto     = liberaHeap(heap_supporto);
     matrice_adiacenza = liberaMatrice(matrice_adiacenza, numero_nodi);
 }
 
@@ -167,9 +127,9 @@ void stampaMatrice(uint** matrice, uint dim){
 /************* calcolo minimum spanning tree ************/
 
 uint calcolaMinSpanTree(uint** matrice, Heap heap, uint dim){
-    for(uint i=1; i<dim; i++){
-        heap[i] = (Nodo){.labl = i, .dist = matrice[0][i]};
-    }
+    cleanHeap(heap);
+    for(uint i=1; i<dim; i++)
+        inserisciFuoriOrdine(heap, i, matrice[0][i]);
     costruisciMinHeap(heap);
     return DijkstraQueue(matrice, heap, dim);
     //return DijkstraQuad(matrice, heap, dim);
@@ -234,10 +194,11 @@ uint DijkstraQuad(uint** matrice, Heap heap, uint dim){
 Heap allocaHeap(uint dim){
     Heap tmp = (Heap) malloc((dim+1)*sizeof(Nodo));  // rende lo heap 1-based e utilizza heap[0] per salvare lunghezza e dimensione
     tmp[0].length = dim;
+    tmp[0].size   = 0;
     return tmp;
 }
 
-Heap liberaMinHeap(Heap heap){
+Heap liberaHeap(Heap heap){
     free(heap);
     return NULL;
 }
@@ -264,16 +225,13 @@ void minHeapify(Heap heap, uint n){
     }
 }
 
-void controllaMin(Heap heap, Nodo* ret){
-    *ret = heap[1];
-}
-
 uint cancellaMin(Heap heap, Nodo* ret){
     if(HEAP.size < 1){
         return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
     }
     *ret = heap[1];
     heap[1] = heap[HEAP.size];
+    //printf("Heap: pop di: (%u, %u)\n", ret->labl, ret->dist);
     HEAP.size--;
     minHeapify(heap, 1);
     return 1;                   // un elemento è stato cancellato
@@ -286,13 +244,14 @@ void decrementaPri(Heap heap, uint i){
     }
 }
 
-void inserisciHeap(Heap heap, uint labl, uint dist){
-    uint i = ++HEAP.size;
-    heap[i] = (Nodo){.labl = labl, .dist = dist};
-    decrementaPri(heap, i);
+void incrementaPri(Heap heap, uint i){
+    while(i > 1 && GREATER(i, PARENT(i))){
+        SWAP(PARENT(i),i);
+        i = PARENT(i);
+    }
 }
 
-void stampaMinHeap(Heap heap){
+void stampaHeap(Heap heap){
     for(int i=1; i<=HEAP.size; i++){
         printf("[%3u,%10u]\n", heap[i].labl, heap[i].dist);
     }
@@ -305,30 +264,58 @@ void stampaResiduo(Heap heap){
     }
 }
 
-Pila creaPila(){
-    Pila pila = (Pila) malloc(sizeof(nodoLista));
-    pila->length = 0;
-    pila->next = NULL;
-    return pila;
+void costruisciMaxHeap(Heap heap){
+    HEAP.size = HEAP.length;
+    for(int i=(HEAP.size)>>1; i>0; i--){
+        maxHeapify(heap, i);
+    }
 }
 
-void pushPila(Pila pila, uint valore){
-    nodoLista* nodo = (nodoLista*) malloc(sizeof(nodoLista));
-    nodo->peso = valore;
-    nodo->next = pila->first;
-    pila->first = nodo;
-    pila->length++;
+void maxHeapify(Heap heap, uint n){
+    uint l = LEFT(n);
+    uint r = RIGHT(n);
+    uint posmin;
+    if(l <= HEAP.size && GREATER(l,n))
+        posmin = l;
+    else posmin = n;
+    if(r <= HEAP.size && GREATER(r,posmin))
+        posmin = r;
+    if(posmin != n){
+        SWAP(n, posmin);
+        maxHeapify(heap, posmin);
+    }
 }
 
-uint popPila(Pila pila){
-    uint ret = pila->first->peso;
-    nodoLista* ToS = pila->first->next;
-    free(pila->first);
-    pila->first = ToS;
-    pila->length--;
-    return ret;
+Nodo* heapMax(Heap heap){
+    return &heap[1];
 }
 
-uint dimensionePila(Pila pila){
-    return pila->length;
+uint cancellaMax(Heap heap, Nodo* ret){
+    if(HEAP.size < 1){
+        return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
+    }
+    *ret = heap[1];
+    heap[1] = heap[HEAP.size];
+    HEAP.size--;
+    maxHeapify(heap, 1);
+    return 1;                   // un elemento è stato cancellato
+}
+
+void inserisciMaxHeap(Heap heap, uint labl, uint dist){
+    uint i = ++HEAP.size;
+    heap[i] = (Nodo){.labl = labl, .dist = dist};
+    decrementaPri(heap, i);
+}
+
+uint inserisciFuoriOrdine(Heap heap, uint labl, uint dist){
+    if(HEAP.size < HEAP.length){
+        heap[++HEAP.size] = (Nodo){.labl = labl, .dist = dist};
+        //printf("<%u, %u>\n", labl, dist);
+        return 1;
+    }
+    else return 0;
+}
+
+void cleanHeap(Heap heap){
+    heap[0].size = 0;
 }
