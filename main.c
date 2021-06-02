@@ -14,7 +14,7 @@
 #define RIGHT(n)            (2*(n)+1)
 #define PARENT(n)           ((n)>>1)
 #define SMALLER(a,b)        (heap[(a)].dist < heap[(b)].dist)
-#define GREATER(a,b)        (heap[(a)].dist > heap[(b)].dist)
+#define GREATER(a,b)        ((heap[(a)].dist > heap[(b)].dist) || ((heap[(a)].dist == heap[(b)].dist) && (heap[(a)].labl > heap[(b)].labl)))
 #define SWAP(a,b)           {Nodo C = heap[(a)]; heap[(a)] = heap[(b)]; heap[(b)] = C;}
 
 //  Utilizza la stessa definizione sia per i dati che per i metadati
@@ -50,35 +50,47 @@ uint    DijkstraQuad(uint** matrice, Heap heap, uint dim);
 void    costruisciMaxHeap(Heap heap);
 void    maxHeapify(Heap heap, uint n);
 Nodo*   heapMax(Heap heap);
-uint    cancellaMax(Heap heap, Nodo* ret);
+uint    cancellaMax(Heap heap);
 void    inserisciMaxHeap(Heap heap, uint labl, uint dist);
 uint    inserisciFuoriOrdine(Heap heap, uint labl, uint dist);
+void    outHeap(Heap heap);
 
 int main(){
-    uint    indice = 0;
+    uint    indice = 0, peso_grafo;
     uint    numero_nodi;
     uint    K;
     char    comando[LUNGHEZZA_MAX_COMANDI];
     uint**  matrice_adiacenza;
     Heap    heap_supporto;
-    //Heap    heap_classifica;
+    Heap    heap_classifica;
 
     if(scanf("%u %u\n", &numero_nodi, &K) == EOF) return 1; 
     //printf("Nodi: %u, Classifica: %u\n", numero_nodi, lunghezza_classifica);
     matrice_adiacenza = allocaMatrice(numero_nodi);
     heap_supporto     = allocaHeap(numero_nodi-1);                                    // heap non deve contenere il nodo 0
-    //heap_classifica   = allocaHeap(K);                                              //guess I'll die
+    heap_classifica   = allocaHeap(K+1);                                              // guess I'll die
 
     while(scanf("%s\n", comando) != EOF){
         if(! strncmp(comando, AggiungiGrafo, LUNGHEZZA_MAX_COMANDI)){
             riempiMatrice(matrice_adiacenza, numero_nodi);
-            printf("%4u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
-            //calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
+            //printf("%4u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
+            peso_grafo = calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
+            if(indice < K){
+                inserisciFuoriOrdine(heap_classifica, indice, peso_grafo);
+            }else{
+                if(indice == K){
+                    costruisciMaxHeap(heap_classifica);
+                    //stampaHeap(heap_classifica);
+                }
+                inserisciMaxHeap(heap_classifica, indice, peso_grafo);
+                cancellaMax(heap_classifica);
+            }
             indice++;
         }else if(! strncmp(comando, TopK, LUNGHEZZA_MAX_COMANDI)){
-
-        }else return 1;                                                             // comando inatteso
+            outHeap(heap_classifica);
+        }else return 1;                                                               // comando inatteso
     }
+    heap_classifica   = liberaHeap(heap_classifica);
     heap_supporto     = liberaHeap(heap_supporto);
     matrice_adiacenza = liberaMatrice(matrice_adiacenza, numero_nodi);
 }
@@ -204,7 +216,6 @@ Heap liberaHeap(Heap heap){
 }
 
 void costruisciMinHeap(Heap heap){
-    HEAP.size = HEAP.length;
     for(int i=(HEAP.size)>>1; i>0; i--){
         minHeapify(heap, i);
     }
@@ -252,6 +263,7 @@ void incrementaPri(Heap heap, uint i){
 }
 
 void stampaHeap(Heap heap){
+    printf("\n");
     for(int i=1; i<=HEAP.size; i++){
         printf("[%3u,%10u]\n", heap[i].labl, heap[i].dist);
     }
@@ -265,7 +277,6 @@ void stampaResiduo(Heap heap){
 }
 
 void costruisciMaxHeap(Heap heap){
-    HEAP.size = HEAP.length;
     for(int i=(HEAP.size)>>1; i>0; i--){
         maxHeapify(heap, i);
     }
@@ -274,15 +285,15 @@ void costruisciMaxHeap(Heap heap){
 void maxHeapify(Heap heap, uint n){
     uint l = LEFT(n);
     uint r = RIGHT(n);
-    uint posmin;
-    if(l <= HEAP.size && GREATER(l,n))
-        posmin = l;
-    else posmin = n;
-    if(r <= HEAP.size && GREATER(r,posmin))
-        posmin = r;
-    if(posmin != n){
-        SWAP(n, posmin);
-        maxHeapify(heap, posmin);
+    uint posmax;
+    if(l <= HEAP.size && GREATER(l, n))
+        posmax = l;
+    else posmax = n;
+    if(r <= HEAP.size && GREATER(r, posmax))
+        posmax = r;
+    if(posmax != n){
+        SWAP(n, posmax);
+        maxHeapify(heap, posmax);
     }
 }
 
@@ -290,11 +301,10 @@ Nodo* heapMax(Heap heap){
     return &heap[1];
 }
 
-uint cancellaMax(Heap heap, Nodo* ret){
+uint cancellaMax(Heap heap){
     if(HEAP.size < 1){
         return 0;               // non è stato cancellato alcun valore poichè lo hep è vuoto
     }
-    *ret = heap[1];
     heap[1] = heap[HEAP.size];
     HEAP.size--;
     maxHeapify(heap, 1);
@@ -304,7 +314,7 @@ uint cancellaMax(Heap heap, Nodo* ret){
 void inserisciMaxHeap(Heap heap, uint labl, uint dist){
     uint i = ++HEAP.size;
     heap[i] = (Nodo){.labl = labl, .dist = dist};
-    decrementaPri(heap, i);
+    incrementaPri(heap, i);
 }
 
 uint inserisciFuoriOrdine(Heap heap, uint labl, uint dist){
@@ -318,4 +328,11 @@ uint inserisciFuoriOrdine(Heap heap, uint labl, uint dist){
 
 void cleanHeap(Heap heap){
     heap[0].size = 0;
+}
+void outHeap(Heap heap){
+    uint i = 1;
+    for(; i<heap->size; i++){
+        printf("%u ", heap[i].labl);
+    }
+    printf("%u\n", heap[i].labl);
 }
