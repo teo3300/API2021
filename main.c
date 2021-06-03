@@ -76,6 +76,7 @@ int main(){
             //printf("%4u %u\n", indice, calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi));
             peso_grafo = calcolaMinSpanTree(matrice_adiacenza, heap_supporto, numero_nodi);
             if(indice < K){
+                //printf("indice:%u K:%u\n", indice, K);
                 inserisciFuoriOrdine(heap_classifica, indice, peso_grafo);
             }else{
                 if(indice == K){
@@ -115,9 +116,17 @@ uint** liberaMatrice(uint** matrice, uint dim){
 }
 
 void riempiMatrice(uint** matrice, uint dim){
+    uint val;
+    char c;
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
-            if(scanf("%u,", &matrice[i][j]));
+            val = 0;
+            c=getchar_unlocked();
+            while(c!=',' && c != '\n'){
+                val = val*10 + c - '0';
+                c=getchar_unlocked();
+            }
+            matrice[i][j] = val;
             if(!matrice[i][j]) matrice[i][j] = INFINITO;
         }
     }
@@ -330,8 +339,9 @@ void cleanHeap(Heap heap){
     heap[0].size = 0;
 }
 void outHeap(Heap heap){
-    uint i = 1;
-    for(; i<heap->size; i++){
+    if(!heap->size){printf("\n"); return;}
+    uint i;
+    for(i=1; i<heap->size; i++){
         printf("%u ", heap[i].labl);
     }
     printf("%u\n", heap[i].labl);
